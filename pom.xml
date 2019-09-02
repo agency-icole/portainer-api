@@ -24,6 +24,24 @@
         <java.version>1.8</java.version>
     </properties>
 
+    <developers>
+        <developer>
+            <id>aradosz79</id>
+            <name>Artur Radosz</name>
+            <email>artur@icole.eu</email>
+            <url>http://artur.jaaz.co.uk/</url>
+            <organization>Agency ICOLE</organization>
+            <organizationUrl>http://icole.eu</organizationUrl>
+            <roles>
+                <role>architect</role>
+                <role>developer</role>
+            </roles>
+            <timezone>Europe/Warsaw</timezone>
+            <properties>
+                <picUrl>https://secure.gravatar.com/avatar/207da7acb36b3112dfcb2bfa803e40fd.jpg</picUrl>
+            </properties>
+        </developer>
+    </developers>
     <scm>
         <connection>scm:git:git://github.com:aradosz79/portainer-api.git</connection>
         <developerConnection>scm:git:git@github.com:aradosz79/portainer-api.git</developerConnection>
