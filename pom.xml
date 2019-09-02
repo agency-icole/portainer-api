@@ -4,7 +4,7 @@
 
     <groupId>eu.icole</groupId>
     <artifactId>portainer-api</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2-SNAPSHOT</version>
     <name>Portainer Java API</name>
 
     <description>Java API to access REST endpoints of Portainer</description>
