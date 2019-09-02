@@ -4,7 +4,7 @@
 
     <groupId>eu.icole</groupId>
     <artifactId>portainer-api</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2-SNAPSHOT</version>
     <name>Portainer Java API</name>
 
     <description>Java API to access REST endpoints of Portainer</description>
@@ -28,7 +28,7 @@
         <connection>scm:git:git://github.com:aradosz79/portainer-api.git</connection>
         <developerConnection>scm:git:git@github.com:aradosz79/portainer-api.git</developerConnection>
         <url>https://github.com/aradosz79/portainer-api</url>
-        <tag>portainer-api-0.0.1</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <dependencies>
