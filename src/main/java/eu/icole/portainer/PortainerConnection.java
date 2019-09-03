@@ -78,9 +78,12 @@ public class PortainerConnection {
 
         Feature feature = new LoggingFeature(logger, Level.INFO, LoggingFeature.Verbosity.PAYLOAD_ANY, null);
 
-        client = ClientBuilder.newBuilder().withConfig(defaultConfig)
-                .register(feature).sslContext(sslcontext)
-                .build();
+        ClientBuilder cb = ClientBuilder.newBuilder().withConfig(defaultConfig);
+
+        if (false) //TURN ON FOR DEBUG
+            cb.register(feature).sslContext(sslcontext);
+
+        Client client = cb.build();
         ;
         JacksonJsonProvider jacksonJsonProvider =
                 new JacksonJaxbJsonProvider()
@@ -211,7 +214,7 @@ public class PortainerConnection {
 
     public Stack updateStack(Stack stack, StackDeploymentBody stackDeploymentBody) throws PortainerException {
         Invocation.Builder invocationBuilder
-                = getRootWebTarget().path("stacks/" + stack.getId()).queryParam("endpointId",stack.getEndpointId()).
+                = getRootWebTarget().path("stacks/" + stack.getId()).queryParam("endpointId", stack.getEndpointId()).
                 request(MediaType.APPLICATION_JSON_TYPE)
                 .header("Authorization", "Bearer " + getJwt());
         Response response = invocationBuilder.put(Entity.entity(stackDeploymentBody, MediaType.APPLICATION_JSON_TYPE));
