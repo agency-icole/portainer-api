@@ -5,6 +5,7 @@ import com.spotify.docker.client.exceptions.DockerException;
 import eu.icole.portainer.PortainerConnection;
 import eu.icole.portainer.PortainerDockerClient;
 import eu.icole.portainer.model.rest.RawEndpoint;
+import eu.icole.portainer.model.rest.StackDeployment;
 
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
@@ -23,7 +24,7 @@ public class PortainerEndpoint extends RawEndpoint {
         this.connection = connection;
     }
 
-    public long getId() {
+    public int getId() {
         return endpoint.getId();
     }
 
@@ -46,5 +47,4 @@ public class PortainerEndpoint extends RawEndpoint {
         }
         return dockerClient;
     }
-
 }

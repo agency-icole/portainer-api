@@ -18,9 +18,9 @@ import java.util.List;
 
 public class PointainerTest {
 
-    String url = "http://docker.vpn.icole.eu:9000/";
-    String username="monitor";
-    String password;
+    public static String url = "http://docker.vpn.icole.eu:9000/";
+    public static String username="monitor";
+    public static String password;
 
     String local = "local";
 

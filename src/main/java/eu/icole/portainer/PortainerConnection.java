@@ -11,14 +11,24 @@ import eu.icole.portainer.model.*;
 import eu.icole.portainer.model.rest.Authorization;
 import eu.icole.portainer.model.rest.Credentials;
 import eu.icole.portainer.model.rest.RawEndpoint;
+import eu.icole.portainer.model.rest.StackDeployment;
+import org.apache.http.client.utils.URIBuilder;
 import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.filter.LoggingFilter;
 import org.glassfish.jersey.jackson.JacksonFeature;
+import org.glassfish.jersey.logging.LoggingFeature;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
 import javax.ws.rs.client.*;
+import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class PortainerConnection {
 
@@ -34,7 +44,7 @@ public class PortainerConnection {
             ObjectMapperProvider.class,
             JacksonFeature.class,
             LogsResponseReader.class,
-            ProgressResponseReader.class);
+            ProgressResponseReader.class, MultiPartFeature.class);
 
     PortainerConnection(String url, String user, String password) {
         this.url = url;
@@ -44,7 +54,14 @@ public class PortainerConnection {
 
     void connect() throws PortainerException {
 
-        client = ClientBuilder.newClient(defaultConfig);
+        Logger logger = Logger.getLogger(getClass().getName());
+
+        Feature feature = new LoggingFeature(logger, Level.INFO, LoggingFeature.Verbosity.PAYLOAD_ANY, null);
+
+        client = ClientBuilder.newBuilder().withConfig(defaultConfig)
+                .register(feature)
+                .build();
+        ;
         JacksonJsonProvider jacksonJsonProvider =
                 new JacksonJaxbJsonProvider()
                         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -93,7 +110,7 @@ public class PortainerConnection {
         }
     }
 
-    public WebTarget getRootWebTarget(){
+    public WebTarget getRootWebTarget() {
         return webTarget;
     }
 
@@ -102,20 +119,40 @@ public class PortainerConnection {
                 = webTarget.path("endpoints");
 
         Invocation.Builder invocationBuilder
-                = authWebTarget.request(MediaType.APPLICATION_JSON).header("Authorization", "Bearer "+getJwt());
+                = authWebTarget.request(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + getJwt());
 
         Response response
                 = invocationBuilder.get();
 
-         checkForError(response);
+        checkForError(response);
 
-         List<RawEndpoint> list = response.readEntity(new GenericType<List<RawEndpoint>>(){});
-         if(list.size()>0)
+        List<RawEndpoint> list = response.readEntity(new GenericType<List<RawEndpoint>>() {
+        });
+        if (list.size() > 0)
             return new PortainerEndpoints(this, list);
-         return null;
+        return null;
     }
 
     public PortainerEndpoint getEndpoint(String name) throws PortainerException {
         return getEndpoints().getEndpointByName(name);
+    }
+
+
+    public void createStack(StackDeployment stackDeployment) throws PortainerException, URISyntaxException {
+
+        Invocation.Builder invocationBuilder
+                = getRootWebTarget().path("stacks")
+                .queryParam("type", "" + stackDeployment.getType())
+                .queryParam("method", stackDeployment.getMethod())
+                .queryParam("endpointId",stackDeployment.getEndpointId()+"")
+                .request(MediaType.APPLICATION_JSON_TYPE).
+                header("Authorization", "Bearer " + getJwt()).property("test", "test");
+
+        Response response
+                = invocationBuilder
+                .post(Entity.entity(stackDeployment.getBody(), MediaType.APPLICATION_JSON_TYPE));
+
+        checkForError(response);
+
     }
 }

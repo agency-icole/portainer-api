@@ -5,16 +5,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class RawEndpoint {
 
     @JsonProperty("Id")
-    long id;
+    int id;
 
     @JsonProperty("Name")
     String name;
 
-    public long getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(int id) {
         this.id = id;
     }
 
