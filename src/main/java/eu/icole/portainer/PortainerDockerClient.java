@@ -27,7 +27,7 @@ public class PortainerDockerClient extends DefaultDockerClient {
 
     private WebTarget addParameters(WebTarget resource, final Param... params)
             throws DockerException {
-        System.out.println(resource);
+        
         final Map<String, List<String>> filters = new HashMap<>();
         for (final Param param : params) {
             if (param instanceof FilterParam) {

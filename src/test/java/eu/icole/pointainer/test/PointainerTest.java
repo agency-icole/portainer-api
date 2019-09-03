@@ -14,6 +14,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.net.URISyntaxException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 public class PointainerTest {
@@ -21,8 +23,7 @@ public class PointainerTest {
     public static String url = "http://docker.vpn.icole.eu:9000/";
     public static String username="monitor";
     public static String password;
-
-    String local = "local";
+    public static String endpoint="develop";
 
     @BeforeEach
     public void setup(){
@@ -38,7 +39,7 @@ public class PointainerTest {
     }
 
     @Test
-    public void testConnectionAndSuccess() throws PortainerException{
+    public void testConnectionAndSuccess() throws PortainerException, NoSuchAlgorithmException, KeyManagementException {
 
         PortainerConnection connection = PortainerConnection.connect(url, username, password);
         Assertions.assertNotNull(connection);
@@ -46,7 +47,7 @@ public class PointainerTest {
 
 
     @Test
-    public void testGetEndpoints() throws PortainerException{
+    public void testGetEndpoints() throws PortainerException, NoSuchAlgorithmException, KeyManagementException {
 
         PortainerConnection connection = PortainerConnection.connect(url, username, password);
         Assertions.assertNotNull(connection);
@@ -55,24 +56,24 @@ public class PointainerTest {
     }
 
     @Test
-    public void testGetLocalEndpoint() throws PortainerException{
+    public void testGetLocalEndpoint() throws PortainerException, NoSuchAlgorithmException, KeyManagementException {
 
         PortainerConnection connection = PortainerConnection.connect(url, username, password);
         Assertions.assertNotNull(connection);
 
-        PortainerEndpoint endpoint = connection.getEndpoint("local");
+        PortainerEndpoint endpoint = connection.getEndpoint(PointainerTest.endpoint);
         Assertions.assertNotNull(endpoint);
 
     }
 
 
     @Test
-    public void testGetContainers() throws PortainerException {
+    public void testGetContainers() throws PortainerException, NoSuchAlgorithmException, KeyManagementException {
 
         PortainerConnection connection = PortainerConnection.connect(url, username, password);
         Assertions.assertNotNull(connection);
 
-        PortainerEndpoint endpoint = connection.getEndpoint("local");
+        PortainerEndpoint endpoint = connection.getEndpoint(PointainerTest.endpoint);
         Assertions.assertNotNull(endpoint);
 
         DockerClient client = endpoint.getDockerClient();
@@ -80,11 +81,11 @@ public class PointainerTest {
     }
 
     @Test
-    public void testContainerList() throws PortainerException, DockerException, InterruptedException {
+    public void testContainerList() throws PortainerException, DockerException, InterruptedException, NoSuchAlgorithmException, KeyManagementException {
         PortainerConnection connection = PortainerConnection.connect(url, username, password);
         Assertions.assertNotNull(connection);
 
-        PortainerEndpoint endpoint = connection.getEndpoint("local");
+        PortainerEndpoint endpoint = connection.getEndpoint(PointainerTest.endpoint);
         Assertions.assertNotNull(endpoint);
 
         DockerClient client = endpoint.getDockerClient();
@@ -93,11 +94,11 @@ public class PointainerTest {
     }
 
     @Test
-    public void testContainerInfo() throws PortainerException, DockerException, InterruptedException{
+    public void testContainerInfo() throws PortainerException, DockerException, InterruptedException, NoSuchAlgorithmException, KeyManagementException {
         PortainerConnection connection = PortainerConnection.connect(url, username, password);
         Assertions.assertNotNull(connection);
 
-        PortainerEndpoint endpoint = connection.getEndpoint("local");
+        PortainerEndpoint endpoint = connection.getEndpoint(PointainerTest.endpoint);
         Assertions.assertNotNull(endpoint);
 
         DockerClient client = endpoint.getDockerClient();

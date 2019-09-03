@@ -8,10 +8,7 @@ import com.spotify.docker.client.LogsResponseReader;
 import com.spotify.docker.client.ObjectMapperProvider;
 import com.spotify.docker.client.ProgressResponseReader;
 import eu.icole.portainer.model.*;
-import eu.icole.portainer.model.rest.Authorization;
-import eu.icole.portainer.model.rest.Credentials;
-import eu.icole.portainer.model.rest.RawEndpoint;
-import eu.icole.portainer.model.rest.StackDeployment;
+import eu.icole.portainer.model.rest.*;
 import org.apache.http.client.utils.URIBuilder;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.filter.LoggingFilter;
@@ -19,6 +16,10 @@ import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.logging.LoggingFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.client.*;
 import javax.ws.rs.core.Feature;
 import javax.ws.rs.core.GenericType;
@@ -26,6 +27,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -52,15 +58,32 @@ public class PortainerConnection {
         this.password = password;
     }
 
-    void connect() throws PortainerException {
+    void connect() throws PortainerException, NoSuchAlgorithmException, KeyManagementException {
+
+        SSLContext sslcontext = SSLContext.getInstance("TLS");
+
+        sslcontext.init(null, new TrustManager[]{new X509TrustManager() {
+            public void checkClientTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
+            }
+
+            public void checkServerTrusted(X509Certificate[] arg0, String arg1) throws CertificateException {
+            }
+
+            public X509Certificate[] getAcceptedIssuers() {
+                return new X509Certificate[0];
+            }
+        }}, new java.security.SecureRandom());
 
         Logger logger = Logger.getLogger(getClass().getName());
 
         Feature feature = new LoggingFeature(logger, Level.INFO, LoggingFeature.Verbosity.PAYLOAD_ANY, null);
 
-        client = ClientBuilder.newBuilder().withConfig(defaultConfig)
-                .register(feature)
-                .build();
+        ClientBuilder cb = ClientBuilder.newBuilder().withConfig(defaultConfig);
+
+        if (false) //TURN ON FOR DEBUG
+            cb.register(feature).sslContext(sslcontext);
+
+        Client client = cb.build();
         ;
         JacksonJsonProvider jacksonJsonProvider =
                 new JacksonJaxbJsonProvider()
@@ -90,7 +113,7 @@ public class PortainerConnection {
         return jwt;
     }
 
-    public static PortainerConnection connect(String url, String user, String password) throws PortainerException {
+    public static PortainerConnection connect(String url, String user, String password) throws PortainerException, KeyManagementException, NoSuchAlgorithmException {
         PortainerConnection connection = new PortainerConnection(url, user, password);
         connection.connect();
         return connection;
@@ -138,21 +161,69 @@ public class PortainerConnection {
     }
 
 
-    public void createStack(StackDeployment stackDeployment) throws PortainerException, URISyntaxException {
+    public Stack createStack(StackDeployment stackDeployment) throws PortainerException, URISyntaxException {
+        return createStack(stackDeployment, false);
+    }
+
+    public Stack createStack(StackDeployment stackDeployment, boolean force) throws PortainerException, URISyntaxException {
 
         Invocation.Builder invocationBuilder
                 = getRootWebTarget().path("stacks")
                 .queryParam("type", "" + stackDeployment.getType())
                 .queryParam("method", stackDeployment.getMethod())
-                .queryParam("endpointId",stackDeployment.getEndpointId()+"")
+                .queryParam("endpointId", stackDeployment.getEndpointId() + "")
                 .request(MediaType.APPLICATION_JSON_TYPE).
-                header("Authorization", "Bearer " + getJwt()).property("test", "test");
+                        header("Authorization", "Bearer " + getJwt()).property("test", "test");
 
         Response response
                 = invocationBuilder
                 .post(Entity.entity(stackDeployment.getBody(), MediaType.APPLICATION_JSON_TYPE));
 
+        if (response.getStatus() == 409 && force) {
+            Stack stack = getStack(stackDeployment.getEndpointId(), stackDeployment.getBody().getName());
+            if (stack == null)
+                throw new PortainerException("Inconsistency detected. Cannot update stack " + stack.getName());
+            return updateStack(stack, stackDeployment.getBody());
+        } else
+            checkForError(response);
+        return response.readEntity(Stack.class);
+    }
+
+    public Stack getStack(int endpointId, String name) throws PortainerException {
+        List<Stack> stackList = getStacks();
+        for (Stack stack : stackList) {
+            if (stack.getEndpointId() == endpointId && name.equals(stack.getName()))
+                return stack;
+        }
+        return null;
+    }
+
+    public List<Stack> getStacks() throws PortainerException {
+        Invocation.Builder invocationBuilder
+                = getRootWebTarget().path("stacks").request(MediaType.APPLICATION_JSON_TYPE)
+                .header("Authorization", "Bearer " + getJwt());
+        ;
+
+        Response response = invocationBuilder.get();
+
         checkForError(response);
+
+        return response.readEntity(new GenericType<List<Stack>>() {
+        });
+    }
+
+    public Stack updateStack(Stack stack, StackDeploymentBody stackDeploymentBody) throws PortainerException {
+        Invocation.Builder invocationBuilder
+                = getRootWebTarget().path("stacks/" + stack.getId()).queryParam("endpointId", stack.getEndpointId()).
+                request(MediaType.APPLICATION_JSON_TYPE)
+                .header("Authorization", "Bearer " + getJwt());
+        Response response = invocationBuilder.put(Entity.entity(stackDeploymentBody, MediaType.APPLICATION_JSON_TYPE));
+        checkForError(response);
+        return response.readEntity(Stack.class);
+    }
+
+
+    public void deleteStack() {
 
     }
 }

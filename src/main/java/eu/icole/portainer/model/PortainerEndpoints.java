@@ -3,6 +3,7 @@ package eu.icole.portainer.model;
 import eu.icole.portainer.PortainerConnection;
 import eu.icole.portainer.model.rest.RawEndpoint;
 
+import javax.xml.ws.Endpoint;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -18,6 +19,9 @@ public class PortainerEndpoints {
         }
     }
 
+    public List<PortainerEndpoint> getEndpoints(){
+        return endpoints;
+    }
     public PortainerEndpoint getEndpointByName(String name){
 
         for(PortainerEndpoint endpoint : endpoints){

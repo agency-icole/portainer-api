@@ -47,4 +47,22 @@ public class PortainerEndpoint extends RawEndpoint {
         }
         return dockerClient;
     }
+
+    public WebTarget getDockerWebTarget(){
+        return connection.getRootWebTarget().path("/endpoints/"+getId()+"/docker");
+    }
+
+/*    public void getSwarm() throws PortainerException {
+
+        WebTarget pathWebTarget = getDockerWebTarget().path("/swarm");
+
+        Invocation.Builder invocationBuilder
+                = pathWebTarget.request(MediaType.APPLICATION_JSON).header("Authorization",
+                "Bearer " + connection.getJwt());
+
+        Response response
+                = invocationBuilder.get();
+
+        PortainerConnection.checkForError(response);
+    }*/
 }
