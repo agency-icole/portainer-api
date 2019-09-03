@@ -16,7 +16,7 @@ To start using the power of Portainer in your Java application please add follow
 <dependency>
   <groupId>eu.icole</groupId>
   <artifactId>portainer-api</artifactId>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
 </dependency>
 ```
 # Using the API
@@ -60,6 +60,33 @@ For instance to get a list of Containers on the given endpoint use:
 
 ```
    List<Container> containers = client.listContainers();
+```
+
+# Playing with the Stacks 
+
+From version 0.0.2 the stack functionality has been mostly covered. You can create new stacks on the endpoints of both swarm and composer type by using a GIT repository or sending the content of stack file as the String. 
+
+The File Upload method is not covered and will be not for a longer time, as another project - the Portainer Maven Plugin will handle such type of jobs. 
+
+Besides the creation of the new stack, you can list existing ones and update them. Please note that the method createStack has two versions, one is with the flag force. If set to true it will overwrite Stack if it is already created.
+
+Sample code to create Stacks of the Swarm type:
+
+```
+
+        PortainerEndpoint endpoint = connection.getEndpoint("develop");
+        
+        StackDeploymentBody body = new StackDeploymentBody();
+        body.setName("test");
+        body.setStackFileContent("version: '3'");
+        
+        Swarm swarm = endpoint.getDockerClient().inspectSwarm();
+        body.setSwarmID(swarm.id());
+        
+        StackDeployment deployment = new StackDeployment(StackDeployment.STACK_TYPE_SWARM,
+                StackDeployment.STACK_METHOD_STRING, endpoint.getId(), body);
+
+        Stack stack = connection.createStack(deployment,true);
 ```
 
 Enjoy
