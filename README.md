@@ -1,6 +1,6 @@
 # portainer-api
 
-Java API for accessing Portainer REST enpoints. 
+Java API for accessing Portainer REST enpoints. This project is not official project of Portainer.io, yet.
 
 It is built on top of Spotify Docker API for Java and makes possible to execute most of the REST commands on any of the Portainer endpoints. 
 
